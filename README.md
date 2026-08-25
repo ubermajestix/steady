@@ -5,7 +5,7 @@ recovering faster in the moment, building new patterns over time, and helping a 
 struggles the same way. It distills four talks on Rejection Sensitive Dysphoria (RSD) and
 ADHD, checked against published research.
 
-**Live site:** https://ubermajestix.github.io/steady/
+**Live site:** https://ubermajestix.com/steady/
 
 ## What's inside
 
