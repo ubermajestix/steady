@@ -1,4 +1,4 @@
-# Steady — a working guide to rejection sensitivity
+# Steady: a working guide to rejection sensitivity
 
 A small, offline-first web guide for getting less reactive to rejection and criticism:
 recovering faster in the moment, building new patterns over time, and helping a kid who
@@ -9,12 +9,12 @@ ADHD, checked against published research.
 
 ## What's inside
 
-- **`index.html`** — landing page.
-- **`guide.html`** — the full guide: an in-the-moment *Rescue* tool (intensity meter, box
+- **`index.html`**: landing page.
+- **`guide.html`**: the full guide, with an in-the-moment *Rescue* tool (intensity meter, box
   breathing, "widen the gap" timer, reframes), a *Rewire* set of practice lessons, private
-  *Track* logging with charts, a *Your son* parenting section, and *Help & safety*.
-- **`kids.html`** — "Big Feelings Helper," a simple, friendly version for a child.
-- **`cheat-sheet.html`** — a printable one-page rescue card.
+  *Track* logging with charts, a *Your child* parenting section, and *Help & safety*.
+- **`kids.html`**: "Big Feelings Helper," a simple, friendly version for a child.
+- **`cheat-sheet.html`**: a printable one-page rescue card.
 
 Everything runs client-side. Any notes or logs you enter stay in your browser's
 `localStorage`; nothing is uploaded anywhere.
