@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Steady — a working guide to rejection sensitivity</title>
+<style>
+  :root {
+    --bg: #f6f5f2;
+    --surface: #ffffff;
+    --surface-2: #efeee9;
+    --ink: #23211d;
+    --ink-soft: #55514a;
+    --ink-faint: #837d73;
+    --line: #e2dfd8;
+    --accent: #3a6b5f;
+    --accent-soft: #e4efe9;
+    --green: #4c8a5a;
+    --green-soft: #e3f0e5;
+    --yellow: #c08a2b;
+    --yellow-soft: #f6ecd5;
+    --red: #c0553f;
+    --red-soft: #f6e0da;
+    --shadow: 0 1px 2px rgba(0,0,0,.05), 0 8px 24px rgba(0,0,0,.05);
+    --radius: 14px;
+    --maxw: 720px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #191816;
+      --surface: #232220;
+      --surface-2: #2c2b28;
+      --ink: #ece9e3;
+      --ink-soft: #bdb8ae;
+      --ink-faint: #8d877c;
+      --line: #35332f;
+      --accent: #7fc3b1;
+      --accent-soft: #26332f;
+      --green: #7bbf88;
+      --green-soft: #21302a;
+      --yellow: #d9b062;
+      --yellow-soft: #322a1c;
+      --red: #e08a72;
+      --red-soft: #35241f;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    font-size: 17px;
+    padding-bottom: 96px;
+  }
+  h1, h2, h3 { line-height: 1.25; font-weight: 650; }
+  h1 { font-size: 1.5rem; margin: 0 0 .2rem; }
+  h2 { font-size: 1.28rem; margin: 1.8rem 0 .6rem; }
+  h3 { font-size: 1.05rem; margin: 1.2rem 0 .4rem; }
+  p { margin: .6rem 0; }
+  a { color: var(--accent); }
+  header.top {
+    position: sticky; top: 0; z-index: 30;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: saturate(1.4) blur(8px);
+    -webkit-backdrop-filter: saturate(1.4) blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .top-inner {
+    max-width: var(--maxw); margin: 0 auto; padding: .55rem 1rem .1rem;
+  }
+  .brand { display: flex; align-items: baseline; gap: .5rem; }
+  .brand strong { font-size: 1.1rem; letter-spacing: .2px; }
+  .brand span { color: var(--ink-faint); font-size: .82rem; }
+  nav.tabs {
+    display: flex; gap: .15rem; overflow-x: auto; scrollbar-width: none;
+    margin-top: .4rem;
+  }
+  nav.tabs::-webkit-scrollbar { display: none; }
+  nav.tabs button {
+    flex: 0 0 auto; border: none; background: none; cursor: pointer;
+    font: inherit; color: var(--ink-faint); padding: .5rem .7rem;
+    border-bottom: 2.5px solid transparent; white-space: nowrap;
+  }
+  nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+  main { max-width: var(--maxw); margin: 0 auto; padding: 1.2rem 1rem 2rem; }
+  section.view { display: none; animation: fade .25s ease; }
+  section.view.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 1.1rem 1.15rem; margin: 1rem 0;
+    box-shadow: var(--shadow);
+  }
+  .lede { color: var(--ink-soft); font-size: 1.02rem; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+    font: inherit; font-weight: 600; cursor: pointer;
+    background: var(--accent); color: #fff; border: none;
+    padding: .7rem 1.1rem; border-radius: 11px;
+  }
+  .btn.secondary { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); }
+  .btn.ghost { background: none; color: var(--accent); padding: .5rem .3rem; }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled { opacity: .5; cursor: default; }
+  .row { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .pill {
+    display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .3px;
+    text-transform: uppercase; padding: .12rem .5rem; border-radius: 999px;
+    background: var(--surface-2); color: var(--ink-faint);
+  }
+  .pill.strong { background: var(--green-soft); color: var(--green); }
+  .pill.ok { background: var(--accent-soft); color: var(--accent); }
+  .pill.weak { background: var(--yellow-soft); color: var(--yellow); }
+  .pill.med { background: var(--red-soft); color: var(--red); }
+  .quiet { color: var(--ink-faint); font-size: .9rem; }
+  input, textarea, select {
+    font: inherit; color: var(--ink); background: var(--surface-2);
+    border: 1px solid var(--line); border-radius: 10px; padding: .55rem .6rem; width: 100%;
+  }
+  textarea { resize: vertical; min-height: 74px; }
+  label.field { display: block; margin: .7rem 0 .2rem; font-weight: 600; font-size: .95rem; }
+  ul.tips { padding-left: 1.1rem; }
+  ul.tips li { margin: .3rem 0; }
+
+  /* Zone chooser */
+  .zones { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; }
+  .zone {
+    cursor: pointer; border-radius: 12px; padding: .9rem .7rem; text-align: center;
+    border: 2px solid var(--line); background: var(--surface); font-weight: 650;
+  }
+  .zone small { display: block; font-weight: 400; color: var(--ink-faint); font-size: .78rem; margin-top: .2rem; }
+  .zone.green { border-color: var(--green); }
+  .zone.green.sel { background: var(--green-soft); }
+  .zone.yellow { border-color: var(--yellow); }
+  .zone.yellow.sel { background: var(--yellow-soft); }
+  .zone.red { border-color: var(--red); }
+  .zone.red.sel { background: var(--red-soft); }
+
+  /* Breathing */
+  .breath-wrap { display: flex; flex-direction: column; align-items: center; gap: .8rem; padding: .5rem 0; }
+  .breath-orb {
+    width: 150px; height: 150px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, var(--accent-soft), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 650; text-align: center; font-size: 1rem;
+    transform: scale(.62); transition: transform 4s ease-in-out;
+    box-shadow: 0 10px 40px color-mix(in srgb, var(--accent) 35%, transparent);
+  }
+  .breath-orb.expand { transform: scale(1); }
+  .breath-orb.hold { transition: transform .3s linear; }
+  @media (prefers-reduced-motion: reduce) {
+    .breath-orb { transition: none !important; transform: scale(.85); }
+  }
+  .timer-big { font-size: 2.6rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* checklist */
+  .check { display: flex; align-items: flex-start; gap: .55rem; padding: .35rem 0; cursor: pointer; }
+  .check input { width: auto; margin-top: .25rem; }
+
+  /* steps */
+  .stepnum { display:inline-flex; width:1.6rem; height:1.6rem; border-radius:50%; background:var(--accent-soft); color:var(--accent); align-items:center; justify-content:center; font-weight:700; font-size:.9rem; margin-right:.4rem;}
+  details.lesson { border: 1px solid var(--line); border-radius: 12px; margin: .7rem 0; background: var(--surface); overflow: hidden; }
+  details.lesson > summary { cursor: pointer; padding: .85rem 1rem; font-weight: 650; list-style: none; display: flex; align-items: center; gap: .5rem; }
+  details.lesson > summary::-webkit-details-marker { display: none; }
+  details.lesson > summary::after { content: "＋"; margin-left: auto; color: var(--ink-faint); }
+  details.lesson[open] > summary::after { content: "－"; }
+  details.lesson .body { padding: 0 1rem 1rem; border-top: 1px solid var(--line); }
+  .practice { background: var(--accent-soft); border-radius: 10px; padding: .7rem .8rem; margin-top: .7rem; }
+  .practice b { color: var(--accent); }
+
+  /* safety */
+  .safety { border-left: 4px solid var(--red); background: var(--red-soft); border-radius: 8px; padding: .8rem 1rem; }
+  .callout { border-left: 4px solid var(--accent); background: var(--accent-soft); border-radius: 8px; padding: .7rem 1rem; margin: 1rem 0; }
+
+  /* floating rescue */
+  .fab {
+    position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; z-index: 40;
+    background: var(--red); color: #fff; border: none; cursor: pointer;
+    font: inherit; font-weight: 700; padding: .8rem 1.3rem; border-radius: 999px;
+    box-shadow: 0 8px 26px color-mix(in srgb, var(--red) 45%, transparent);
+  }
+  .fab:active { transform: translateX(-50%) translateY(1px); }
+
+  /* tracking */
+  table.log { width: 100%; border-collapse: collapse; font-size: .9rem; }
+  table.log th, table.log td { text-align: left; padding: .45rem .4rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.log th { color: var(--ink-faint); font-weight: 600; font-size: .78rem; text-transform: uppercase; letter-spacing: .3px; }
+  .dot { display:inline-block; width:.7rem; height:.7rem; border-radius:50%; }
+  .dot.green { background: var(--green);} .dot.yellow{background: var(--yellow);} .dot.red{background: var(--red);}
+  .stat { display:flex; gap:1.2rem; flex-wrap:wrap; }
+  .stat .num { font-size:1.8rem; font-weight:700; }
+  .stat .lbl { color: var(--ink-faint); font-size:.82rem; }
+  svg.chart { width: 100%; height: auto; display: block; }
+  .streakdots { display:flex; gap:4px; flex-wrap:wrap; }
+  .streakdots i { width:16px; height:16px; border-radius:4px; background:var(--surface-2); border:1px solid var(--line); }
+  .streakdots i.on { background: var(--green); border-color: var(--green); }
+  footer { max-width: var(--maxw); margin: 2rem auto 0; padding: 1rem; color: var(--ink-faint); font-size: .82rem; border-top: 1px solid var(--line); }
+  .src { font-size: .82rem; color: var(--ink-soft); }
+  .src li { margin: .35rem 0; }
+  .toast {
+    position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: var(--bg); padding: .6rem 1rem; border-radius: 10px;
+    font-size: .9rem; opacity: 0; transition: opacity .25s; pointer-events: none; z-index: 60;
+  }
+  .toast.show { opacity: 1; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand"><strong>Steady</strong><span>a working guide to rejection sensitivity</span></div>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" data-view="rescue" aria-selected="true">Rescue</button>
+      <button role="tab" data-view="rewire" aria-selected="false">Rewire</button>
+      <button role="tab" data-view="track" aria-selected="false">Track</button>
+      <button role="tab" data-view="son" aria-selected="false">Your son</button>
+      <button role="tab" data-view="help" aria-selected="false">Help &amp; safety</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- ===================== RESCUE ===================== -->
+<section id="rescue" class="view active" role="tabpanel" aria-label="Rescue">
+  <h1>In the moment</h1>
+  <p class="lede">When a small pushback lands like a blow, the goal is not to win the argument or figure it out. It is to get your body out of the alarm first. Regulate, then think. You cannot reason your way out of a red zone, so don't try yet.</p>
+
+  <div class="card" id="r-zone">
+    <h3>1. Where are you right now?</h3>
+    <p class="quiet">Pick the closest match. The more heated you feel, the less your thinking brain is online, so honesty here changes what you do next.</p>
+    <div class="zones" role="group" aria-label="Intensity">
+      <div class="zone green" role="button" tabindex="0" data-zone="green">Green<small>Steady. Thinking clearly.</small></div>
+      <div class="zone yellow" role="button" tabindex="0" data-zone="yellow">Yellow<small>Stung. Heating up.</small></div>
+      <div class="zone red" role="button" tabindex="0" data-zone="red">Red<small>Flooded. Want to escape or snap.</small></div>
+    </div>
+    <div id="bodyscan" class="hidden">
+      <label class="field">Quick body check (tick what's true):</label>
+      <label class="check"><input type="checkbox" class="bs"> Jaw or fists clenched</label>
+      <label class="check"><input type="checkbox" class="bs"> Chest tight or heart pounding</label>
+      <label class="check"><input type="checkbox" class="bs"> Face hot or flushed</label>
+      <label class="check"><input type="checkbox" class="bs"> Fighting back tears</label>
+      <label class="check"><input type="checkbox" class="bs"> Urge to fire off a reply, leave, or shut down</label>
+    </div>
+  </div>
+
+  <!-- RED / YELLOW: regulate -->
+  <div class="card hidden" id="r-regulate">
+    <h3>2. Settle the alarm</h3>
+    <p><b>Name it, silently:</b> "This is the alarm, not the truth. It's my nervous system firing too loud. It will pass." Naming a feeling measurably calms the brain's threat response.</p>
+
+    <div class="breath-wrap">
+      <div class="breath-orb" id="orb">Breathe</div>
+      <div class="timer-big" id="breathTimer">0:00</div>
+      <div class="row">
+        <button class="btn" id="breathStart">Start breathing</button>
+        <button class="btn secondary" id="breathStop">Stop</button>
+      </div>
+      <p class="quiet" id="breathHint">Slow breathing at about six breaths a minute calms the body's arousal. Follow the circle: in as it grows, hold, out as it shrinks.</p>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--line);margin:1.1rem 0">
+
+    <h3>Widen the gap</h3>
+    <p>Put time between the trigger and your reaction. Even five minutes lets the surge fall. Don't send, say, or decide anything until this runs out.</p>
+    <div class="row" style="align-items:center">
+      <button class="btn secondary" data-gap="5">5 min</button>
+      <button class="btn secondary" data-gap="10">10 min</button>
+      <button class="btn secondary" data-gap="20">20 min</button>
+      <span class="timer-big" id="gapTimer" style="font-size:1.6rem"></span>
+    </div>
+    <p class="quiet" id="gapMsg"></p>
+
+    <div class="callout" id="redOnly">
+      <b>If you're in the red:</b> you are not fit to decide right now, and that's not a character flaw, it's biology. Do not answer the email, pick up the phone, or have the conversation. Say (or type) only this and step away:
+      <p style="margin:.5rem 0 0"><em>"I want to give this a real answer. Let me come back to you in a bit."</em></p>
+    </div>
+
+    <h3>Body reset (optional, fast)</h3>
+    <ul class="tips">
+      <li><b>Cold:</b> splash cold water on your face or hold something cold. A quick cold shock helps the body downshift.</li>
+      <li><b>Move:</b> a brisk walk or 20 jumping jacks burns off the surge.</li>
+      <li><b>Longer exhale:</b> breathe out longer than you breathe in.</li>
+    </ul>
+    <div class="row">
+      <button class="btn" id="toReflect">I've settled a bit &rarr; reflect</button>
+    </div>
+  </div>
+
+  <!-- GREEN / after settling: reflect + reframe -->
+  <div class="card hidden" id="r-reflect">
+    <h3><span id="reflectStepLabel">3.</span> Now look again</h3>
+    <p class="quiet">First thoughts under sting are usually distorted. Two questions do most of the work.</p>
+
+    <label class="field">What actually happened? (just the facts, no story)</label>
+    <textarea id="rf-facts" placeholder="e.g. She replied 'fine, whatever' to my message and hasn't texted since."></textarea>
+
+    <label class="field">What else could it mean? (list 2–3 other explanations)</label>
+    <textarea id="rf-alt" placeholder="e.g. She's slammed at work. She's tired. She answered quickly, not coldly. Maybe it isn't about me at all."></textarea>
+
+    <div class="callout">
+      <b>Try these reframes:</b>
+      <ul class="tips" style="margin:.3rem 0 0">
+        <li>Feeling rejected is not the same as being rejected.</li>
+        <li>Much of what feels like rejection is really a <b>conflict of needs</b>, not a verdict on you.</li>
+        <li>If you can, just ask: "What did you mean by that?" Uncertainty, not the event, is usually the thing you can't stand.</li>
+        <li>Could a calm version of you simply say "oh, my bad" and move on? That option is still open once the alarm quiets.</li>
+      </ul>
+    </div>
+
+    <label class="field">One small next step (or "nothing needed"):</label>
+    <input id="rf-next" placeholder="e.g. Reply tomorrow. Or: let it go, no action.">
+
+    <div class="row" style="margin-top:.8rem">
+      <button class="btn" id="logEpisode">Log this episode</button>
+      <button class="btn ghost" id="rescueReset">Start over</button>
+    </div>
+    <p class="quiet">Logging builds your map of triggers over time. It saves only on this device.</p>
+  </div>
+</section>
+
+<!-- ===================== REWIRE ===================== -->
+<section id="rewire" class="view" role="tabpanel" aria-label="Rewire">
+  <h1>Building the new pattern</h1>
+  <p class="lede">Getting less reactive is not a single decision. It's the same few skills, practiced enough that they show up on their own when you're triggered. Each lesson below is a short read, then one thing to try. Do one at a time. Tick it when you've practiced it.</p>
+
+  <div class="callout">
+    <b>How change actually happens (the honest version).</b> You don't "erase" the old reaction or literally rewire your brain in a weekend. With repetition you build a <em>new response that competes with the old one</em>, and the more contexts you practice it in, the stronger it gets. The old pattern can still resurface under stress, so this is practice, not a one-time fix. Automatic habits take weeks to months, not days. That's normal, not failure.
+  </div>
+
+  <div id="lessonHost"></div>
+
+  <div class="card">
+    <h3>Your practice progress</h3>
+    <p class="quiet">Skills you've marked as practiced. Come back and re-practice the ones that slip.</p>
+    <div id="skillProgress"></div>
+  </div>
+</section>
+
+<!-- ===================== TRACK ===================== -->
+<section id="track" class="view" role="tabpanel" aria-label="Track">
+  <h1>Your patterns over time</h1>
+  <p class="lede">You can't manage what you can't see. Logging episodes and daily check-ins turns a vague "I'm too reactive" into a map: what sets you off, how hard it hits, and whether recovery is getting faster.</p>
+
+  <div class="card">
+    <div class="stat">
+      <div><div class="num" id="statEpisodes">0</div><div class="lbl">episodes logged</div></div>
+      <div><div class="num" id="statRecover">–</div><div class="lbl">avg minutes to recover</div></div>
+      <div><div class="num" id="statStreak">0</div><div class="lbl">day check-in streak</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Daily check-in</h3>
+    <p class="quiet">Ten seconds. How reactive did you feel today, and did you practice a skill?</p>
+    <div class="row" id="checkinZones">
+      <button class="btn secondary" data-ci="green">Mostly steady</button>
+      <button class="btn secondary" data-ci="yellow">Some sting</button>
+      <button class="btn secondary" data-ci="red">Rough day</button>
+    </div>
+    <label class="check" style="margin-top:.6rem"><input type="checkbox" id="ciPracticed"> I practiced a skill today</label>
+    <div class="streakdots" id="streakDots" style="margin-top:.7rem"></div>
+    <p class="quiet" id="ciMsg"></p>
+  </div>
+
+  <div class="card">
+    <h3>Episode intensity over time</h3>
+    <svg class="chart" id="chartIntensity" viewBox="0 0 320 120" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Episode intensity over time"></svg>
+    <p class="quiet" id="chartEmpty">No episodes yet. Use the Rescue tab and tap "Log this episode," or add one below.</p>
+  </div>
+
+  <div class="card">
+    <h3>Most common triggers</h3>
+    <svg class="chart" id="chartTriggers" viewBox="0 0 320 140" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Most common triggers"></svg>
+  </div>
+
+  <div class="card">
+    <h3>Add an episode</h3>
+    <label class="field">What triggered it? (short)</label>
+    <input id="ep-trigger" placeholder="e.g. Boss's short email">
+    <label class="field">How intense?</label>
+    <select id="ep-zone"><option value="green">Green – mild</option><option value="yellow" selected>Yellow – strong</option><option value="red">Red – flooded</option></select>
+    <label class="field">Which direction did it go?</label>
+    <select id="ep-dir"><option value="inward">Inward (shame, collapse, withdrew)</option><option value="outward">Outward (anger, snapped, lashed)</option><option value="mixed">Both / other</option></select>
+    <label class="field">Roughly how many minutes to recover?</label>
+    <input id="ep-recover" type="number" min="0" step="5" placeholder="e.g. 30">
+    <label class="field">What did you do? What would you try next time?</label>
+    <textarea id="ep-note" placeholder="Optional"></textarea>
+    <div class="row" style="margin-top:.7rem"><button class="btn" id="addEpisode">Save episode</button></div>
+  </div>
+
+  <div class="card">
+    <h3>Weekly review</h3>
+    <p class="quiet">Once a week, read back your episodes and answer this. It's where the learning compounds.</p>
+    <label class="field">What pattern do I notice? What's one thing to practice next week?</label>
+    <textarea id="weeklyNote" placeholder="e.g. Most of my reds are work emails read late at night. Next week: no work email after 8pm; use the 10-minute gap before replying."></textarea>
+    <div class="row" style="margin-top:.6rem"><button class="btn secondary" id="saveWeekly">Save review</button></div>
+  </div>
+
+  <div class="card">
+    <h3>Episodes</h3>
+    <div id="logTable"></div>
+  </div>
+
+  <div class="card">
+    <h3>Your data</h3>
+    <p class="quiet">Everything you enter stays in this browser on this device. Nothing is uploaded anywhere. Export a backup file, or import one you saved before.</p>
+    <div class="row">
+      <button class="btn secondary" id="exportBtn">Export backup</button>
+      <button class="btn secondary" id="importBtn">Import backup</button>
+      <button class="btn ghost" id="wipeBtn">Erase all my data</button>
+    </div>
+    <input type="file" id="importFile" accept="application/json" class="hidden">
+  </div>
+</section>
+
+<!-- ===================== SON ===================== -->
+<section id="son" class="view" role="tabpanel" aria-label="Your son">
+  <h1>Helping your son</h1>
+  <p class="lede">Two things are both true: how a child is treated doesn't cause the wiring, and the daily tone around him shapes how he sees himself. You don't need a diagnosis to start responding in ways that build resilience. The best-evidenced help for a struggling kid isn't a clever technique, it's warmth, less criticism, and coaching him through big feelings.</p>
+
+  <div class="callout">
+    <b>The most protective thing, per the psychiatrist who named RSD:</b> nearly every well-adjusted adult who grew up with this had <em>one person</em> who gave them a three-part message. Make yourself that person.
+    <ul class="tips" style="margin:.4rem 0 0">
+      <li><b>"I know you."</b> I've watched you grow. You're a good, hardworking kid. This isn't your fault.</li>
+      <li><b>"We'll figure it out."</b> We don't fully know what you're dealing with yet, but we will, and we'll get good at it.</li>
+      <li><b>"I'll be with you."</b> Until we do, you're not facing it alone. We go through it together.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Swap the question</h3>
+    <p>When he melts down after holding it together all day, the reflex is "What's wrong with you?" Replace it with <b>"How can I help?"</b> The meltdown usually isn't defiance, it's a kid dealing with more than he can hold. Trying to change who he is reads to him as "I don't like you." Accepting the kid you have, and helping with the hard moment, is what lands.</p>
+  </div>
+
+  <div class="card">
+    <h3>What the evidence actually backs</h3>
+    <ul class="tips">
+      <li><span class="pill strong">Well-supported</span> <b>Behavioral parent training.</b> For younger kids especially, this is the guideline-recommended first step, ahead of medication. The active ingredients are ordinary: catch him being good, praise specifically, give positive attention, and keep consequences calm and consistent.</li>
+      <li><span class="pill strong">Well-supported</span> <b>Emotion coaching.</b> Name his feeling out loud ("that felt really unfair, huh"), let it be okay to have it, then help him with it. Kids whose parents do this regulate better over time.</li>
+      <li><span class="pill ok">Reasonable</span> <b>Turn down the criticism drip.</b> Kids who struggle with attention hear a lot of small corrections. Each is minor; the pile-up teaches "I'm the problem." You can't eliminate correction, but you can shrink it and outweigh it with genuine warmth.</li>
+      <li><span class="pill ok">Reasonable</span> <b>Model your own regulation.</b> He learns more from watching you use the Rescue steps than from being told to calm down. Narrate it: "I'm frustrated, so I'm going to take a few breaths before I answer."</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>In the heat of his moment</h3>
+    <ol class="tips" style="list-style:decimal">
+      <li>Get calm yourself first. Your steadiness is the intervention.</li>
+      <li>Lower your voice and get to his level. Fewer words.</li>
+      <li>Name it: "You're really upset." Don't argue the facts yet.</li>
+      <li>Offer help, not a lecture: "Want to sit with me, or have a minute alone?"</li>
+      <li>Solve the problem <em>after</em> he's back down, not during.</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h3>When to get him evaluated</h3>
+    <p>If reactions to small setbacks are frequent and intense enough to hurt friendships, school, or how he feels about himself, ask his pediatrician for a referral. An evaluation isn't a label to fear; it opens doors to support, and behavioral parent training is a first-line option a clinician can point you to. You're not diagnosing him. You're getting him the right people.</p>
+  </div>
+</section>
+
+<!-- ===================== HELP ===================== -->
+<section id="help" class="view" role="tabpanel" aria-label="Help and safety">
+  <h1>Help, honesty, and safety</h1>
+
+  <div class="card safety">
+    <h3 style="margin-top:0">If things feel dangerous</h3>
+    <p>Intense shame and rejection crashes can, for some people, bring thoughts of not wanting to be here. That's a signal to reach a person, not a self-help app.</p>
+    <p><b>US:</b> call or text <b>988</b> (Suicide &amp; Crisis Lifeline), or chat at <b>988lifeline.org</b>. Emergency: <b>911</b>.<br>
+    <b>UK &amp; ROI:</b> Samaritans <b>116 123</b>. <b>Elsewhere:</b> find a local line at <b>findahelpline.com</b>.</p>
+    <p>If you're having thoughts of harming yourself, or a sudden severe drop in mood or functioning, please treat it as a reason to talk to a professional now.</p>
+  </div>
+
+  <div class="card">
+    <h3>Straight talk about "RSD"</h3>
+    <p>"Rejection Sensitive Dysphoria" is a useful name for a real, painful experience, but it is <b>not an official diagnosis</b>. It isn't in the DSM-5-TR or ICD-11, it has no validated test, and it comes mostly from one psychiatrist's clinical observation rather than controlled studies. That doesn't mean your pain isn't real. It means you should hold the label loosely.</p>
+    <p>What <em>is</em> well established: <b>emotional dysregulation is a core, lifelong part of ADHD</b> for many people, and <b>rejection sensitivity</b> is a measured, decades-old psychological trait linked to anxiety and depression. Those are the solid ground under everything in this guide.</p>
+  </div>
+
+  <div class="card">
+    <h3>This guide is not treatment</h3>
+    <p>These are self-help skills, and they help. They are not a diagnosis, therapy, or medical advice, and they don't replace a professional. Consider reaching out to a clinician if:</p>
+    <ul class="tips">
+      <li>The reactions are running your relationships, work, or choices.</li>
+      <li>You suspect depression, an anxiety disorder, trauma, or you've been told you might have traits of borderline personality, all of which overlap with this and need real assessment.</li>
+      <li>You want to know whether ADHD is part of the picture. A diagnosis can be useful precisely because it opens up options.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>About medication</h3>
+    <p>The psychiatrist who named RSD suggests certain blood-pressure medicines (alpha-2 agonists like guanfacine and clonidine) can act like "emotional armor." Worth knowing, worth asking about. But: using them for rejection sensitivity is <b>off-label and not yet backed by formal trials</b>, and every medication choice is a conversation with a prescriber who knows your history. Nothing here is a recommendation to start, stop, or dose anything. Bring the question to a clinician.</p>
+  </div>
+
+  <div class="card">
+    <h3>Where this came from</h3>
+    <p class="src">Distilled from four videos you provided:</p>
+    <ul class="src">
+      <li>Dr. William "Bill" Dodson (coined the term RSD) — prevention-first approach, the parenting messages, the medication discussion.</li>
+      <li>Jessica Summers (ADHD/RSD therapist) — the miscalibrated-alarm framing, "widen the gap," practicing "no."</li>
+      <li>Caroline Maguire / How to ADHD — the green/yellow/red intensity meter and the "facts vs. story" reframe.</li>
+      <li>Hayley (ADHD/autistic creator) — accepting community, externalizing thoughts, graded social risk.</li>
+    </ul>
+    <p class="src">Vetted against research so the practices earn their place. Key sources:</p>
+    <ul class="src">
+      <li>Shaw et al. (2014), <em>Am J Psychiatry</em> — emotion dysregulation as core to ADHD.</li>
+      <li>Downey &amp; Feldman (1996), <em>J Pers Soc Psychol</em> — the rejection sensitivity construct.</li>
+      <li>Lieberman et al. (2007), <em>Psychological Science</em> — affect labeling calms the threat response.</li>
+      <li>Safren et al. (2010), <em>JAMA</em> — CBT for adult ADHD.</li>
+      <li>Zaccaro et al. (2018) &amp; Goessl et al. (2017) — slow breathing / HRV and reduced anxiety.</li>
+      <li>MacBeth &amp; Gumley (2012); Wakelin et al. (2022) — self-compassion vs. self-criticism.</li>
+      <li>Milad &amp; Quirk (2012); Wood &amp; Rünger (2016) — how new learning and habits actually form.</li>
+      <li>AAP guideline, Wolraich et al. (2019), <em>Pediatrics</em> — behavioral parent training first-line for kids.</li>
+      <li>Septier et al. (2019) — elevated suicide risk in ADHD (why the safety box matters).</li>
+      <li>van Asselt (2026), <em>Tijdschrift voor Psychiatrie</em> — critical appraisal of "RSD" as a label.</li>
+    </ul>
+    <p class="quiet">Popular claims we deliberately soft-pedaled: the exact "20,000 criticisms" figure (unverified), "polyvagal" mechanism talk (contested; the breathing still works), "rewire your brain" language, and "deliberately get rejected daily" (reframed as graded, self-chosen social risks, since the stunt version has no trials).</p>
+  </div>
+</section>
+
+<footer>
+  Steady is a personal, offline tool. Your entries live only in this browser. It doesn't diagnose or treat anything, and it isn't a substitute for a professional. Be kind to yourself while you use it.
+</footer>
+</main>
+
+<button class="fab" id="fab">I'm in the red — help now</button>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+(function () {
+  // ---------- storage ----------
+  var KEY = "steady_rsd_v1";
+  var state = load();
+  function blank() {
+    return { episodes: [], checkins: {}, skills: {}, weekly: "", weeklyUpdated: null };
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return blank();
+      var d = JSON.parse(raw);
+      return Object.assign(blank(), d);
+    } catch (e) { return blank(); }
+  }
+  var storageOk = true;
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); }
+    catch (e) { if (storageOk) { toast("Couldn't save (private mode?)"); storageOk = false; } }
+  }
+  function todayKey() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function nowStamp() { return new Date().toISOString(); }
+  function fmtDate(iso) {
+    try { var d = new Date(iso); return d.toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+    catch (e) { return ""; }
+  }
+
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $all(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+
+  var toastEl = $("#toast"), toastTimer;
+  function toast(msg) {
+    toastEl.textContent = msg; toastEl.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 2200);
+  }
+
+  // ---------- navigation ----------
+  function show(view) {
+    $all("section.view").forEach(function (s) { s.classList.toggle("active", s.id === view); });
+    $all("nav.tabs button").forEach(function (b) { b.setAttribute("aria-selected", b.dataset.view === view ? "true" : "false"); });
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }
+  $all("nav.tabs button").forEach(function (b) {
+    b.addEventListener("click", function () { show(b.dataset.view); });
+  });
+  $("#fab").addEventListener("click", function () { show("rescue"); resetRescue(); });
+
+  // ---------- rescue flow ----------
+  var currentZone = null;
+  var zoneEls = $all(".zone");
+  function pickZone(z) {
+    currentZone = z;
+    zoneEls.forEach(function (el) { el.classList.toggle("sel", el.dataset.zone === z); });
+    $("#bodyscan").classList.remove("hidden");
+    var regulate = $("#r-regulate"), reflect = $("#r-reflect");
+    if (z === "green") {
+      regulate.classList.add("hidden");
+      reflect.classList.remove("hidden");
+      $("#reflectStepLabel").textContent = "2.";
+      $("#redOnly").classList.add("hidden");
+    } else {
+      regulate.classList.remove("hidden");
+      reflect.classList.add("hidden");
+      $("#reflectStepLabel").textContent = "3.";
+      $("#redOnly").classList.toggle("hidden", z !== "red");
+    }
+  }
+  zoneEls.forEach(function (el) {
+    el.addEventListener("click", function () { pickZone(el.dataset.zone); });
+    el.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pickZone(el.dataset.zone); } });
+  });
+  function resetRescue() {
+    currentZone = null;
+    zoneEls.forEach(function (el) { el.classList.remove("sel"); });
+    $("#bodyscan").classList.add("hidden");
+    $all(".bs").forEach(function (c) { c.checked = false; });
+    $("#r-regulate").classList.add("hidden");
+    $("#r-reflect").classList.add("hidden");
+    stopBreath(); stopGap();
+    $("#rf-facts").value = ""; $("#rf-alt").value = ""; $("#rf-next").value = "";
+  }
+  $("#toReflect").addEventListener("click", function () {
+    $("#r-reflect").classList.remove("hidden");
+    $("#r-reflect").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  $("#rescueReset").addEventListener("click", resetRescue);
+
+  // ---------- breathing (box: 4 in, 4 hold, 4 out, 4 hold) ----------
+  var orb = $("#orb"), breathTimerEl = $("#breathTimer");
+  var breathRAF = null, breathStart = 0, phaseTimer = null;
+  var phases = [
+    { label: "Breathe in", ms: 4000, cls: "expand" },
+    { label: "Hold", ms: 4000, cls: "expand hold" },
+    { label: "Breathe out", ms: 4000, cls: "" },
+    { label: "Hold", ms: 4000, cls: "hold" }
+  ];
+  var phaseIdx = 0;
+  function runPhase() {
+    var p = phases[phaseIdx];
+    orb.textContent = p.label;
+    orb.className = "breath-orb " + p.cls;
+    phaseTimer = setTimeout(function () { phaseIdx = (phaseIdx + 1) % phases.length; runPhase(); }, p.ms);
+  }
+  function tickBreath() {
+    var s = Math.floor((Date.now() - breathStart) / 1000);
+    breathTimerEl.textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+    breathRAF = setTimeout(tickBreath, 250);
+  }
+  function startBreath() {
+    stopBreath();
+    breathStart = Date.now(); phaseIdx = 0; runPhase(); tickBreath();
+    $("#breathStart").textContent = "Restart";
+  }
+  function stopBreath() {
+    clearTimeout(phaseTimer); clearTimeout(breathRAF); breathRAF = null;
+    orb.className = "breath-orb"; orb.textContent = "Breathe";
+  }
+  $("#breathStart").addEventListener("click", startBreath);
+  $("#breathStop").addEventListener("click", function () { stopBreath(); breathTimerEl.textContent = "0:00"; $("#breathStart").textContent = "Start breathing"; });
+
+  // ---------- widen the gap ----------
+  var gapInt = null, gapEnd = 0;
+  function stopGap() { clearInterval(gapInt); gapInt = null; $("#gapTimer").textContent = ""; $("#gapMsg").textContent = ""; }
+  function startGap(mins) {
+    stopGap();
+    gapEnd = Date.now() + mins * 60000;
+    $("#gapMsg").textContent = "Hold off until this reaches zero. Anything you do now, you can do better in " + mins + " minutes.";
+    function tick() {
+      var left = Math.max(0, gapEnd - Date.now());
+      var s = Math.round(left / 1000);
+      $("#gapTimer").textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+      if (left <= 0) {
+        clearInterval(gapInt); gapInt = null;
+        $("#gapMsg").textContent = "Time's up. Notice: you're probably calmer than you were. Now you can choose your response.";
+        toast("Gap complete. You're steadier now.");
+      }
+    }
+    tick(); gapInt = setInterval(tick, 1000);
+  }
+  $all("[data-gap]").forEach(function (b) { b.addEventListener("click", function () { startGap(parseInt(b.dataset.gap, 10)); }); });
+
+  // ---------- log episode from rescue ----------
+  $("#logEpisode").addEventListener("click", function () {
+    var facts = $("#rf-facts").value.trim();
+    var trigger = facts ? facts.slice(0, 80) : "(unspecified)";
+    var scanned = $all(".bs").filter(function (c) { return c.checked; }).length;
+    state.episodes.push({
+      t: nowStamp(),
+      trigger: trigger,
+      zone: currentZone || "yellow",
+      dir: "",
+      recover: null,
+      note: ($("#rf-alt").value.trim() ? "Reframe: " + $("#rf-alt").value.trim() : "") +
+            ($("#rf-next").value.trim() ? " | Next: " + $("#rf-next").value.trim() : ""),
+      bodysigns: scanned
+    });
+    save(); renderTrack();
+    toast("Logged. That's the map growing.");
+    resetRescue();
+    show("track");
+  });
+
+  // ---------- lessons (rewire) ----------
+  var LESSONS = [
+    {
+      id: "what",
+      title: "What this actually is",
+      pill: ["ok", "Foundation"],
+      body: "The reaction that floors you is a nervous system alarm firing too loud, not proof that you're broken or that the criticism is true. \"Dysphoria\" literally means \"unbearable,\" and that's the point: the feeling is real and intense, but its intensity is the malfunction, not a measure of the threat. For many people with ADHD, emotional reactions run hot and fast, and that's well documented. Naming it this way matters. It moves the problem from \"what's wrong with me\" to \"my alarm needs recalibrating,\" and only the second one is fixable.",
+      practice: "For the next few days, when you get stung, silently label it: \"That's the alarm.\" Nothing else. Just notice and name."
+    },
+    {
+      id: "notfault",
+      title: "It's not your fault (and neither is the struggle)",
+      pill: ["strong", "Self-compassion"],
+      body: "You didn't choose a sensitive alarm, and the fact that willpower hasn't fixed it isn't a personal failing either. Self-criticism feels like accountability, but it just adds shame to the fire and makes the next reaction bigger. Treating yourself the way you'd treat a good friend having a hard time is not soft; it measurably lowers self-attack and helps you recover. Try a plain sentence: \"This is hard, and I'm doing my best with a nervous system that runs hot. Other people deal with this too.\"",
+      practice: "Write one kind, true sentence you can say to yourself mid-spiral. Keep it somewhere you'll see it. Read it out loud once."
+    },
+    {
+      id: "label",
+      title: "Name the feeling",
+      pill: ["strong", "Fast + proven"],
+      body: "Putting a feeling into words calms the brain's threat response. It's one of the most reliable quick tools there is. When you say \"I'm feeling rejected and it's making my chest tight,\" the naming itself takes some heat out. It also creates a sliver of distance: you're the one observing the feeling, not just drowning in it.",
+      practice: "Next sting, name it in a full sentence, out loud if you can: \"I notice I'm feeling ___ , and in my body it's ___.\""
+    },
+    {
+      id: "gap",
+      title: "Widen the gap",
+      pill: ["ok", "Core move"],
+      body: "You can't stop an alarm mid-blast, but you can refuse to act while it's screaming. The single most useful habit is putting time between the trigger and your response. The surge falls on its own in minutes. Almost every reaction you regret is one you had inside the first ninety seconds. Even a five-minute delay changes the outcome. Build a default rule: \"I don't reply to anything that stings until I've waited.\"",
+      practice: "Pick one channel where you over-react (texts, email, comments). This week, impose a strict rule: nothing that stings gets a same-minute reply. Use the Rescue gap timer."
+    },
+    {
+      id: "reframe",
+      title: "Facts vs. the story",
+      pill: ["strong", "CBT"],
+      body: "Under sting, your brain fills gaps with the worst reading and then believes it. The fix is two questions: \"What are the just-the-facts of what happened?\" and \"What else could this mean?\" A short reply might mean they're busy, not that they're done with you. Feeling rejected is not the same as being rejected. And a lot of what reads as rejection is really a conflict of needs, two people wanting different things, not a verdict on your worth. When you can, drop the mind-reading and just ask: \"What did you mean by that?\"",
+      practice: "Recall one recent sting. Write the bare facts, then list three other explanations. Notice how the certainty loosens."
+    },
+    {
+      id: "opposite",
+      title: "Opposite action",
+      pill: ["ok", "DBT"],
+      body: "The alarm gives you an urge: attack, or flee and hide. When the urge doesn't fit the facts, doing the opposite (gently, on purpose) teaches your system the threat wasn't real. Urge to fire off a cutting reply? Send nothing, or send something neutral. Urge to cancel plans and isolate after feeling snubbed? Go, briefly. You're not faking feeling fine; you're acting against a false alarm so it quiets next time.",
+      practice: "Name your usual RSD move (lash out / withdraw / people-please). Next time it's not warranted, do the small opposite once."
+    },
+    {
+      id: "no",
+      title: "Practice saying no on small things",
+      pill: ["ok", "Assertiveness"],
+      body: "If rejection terrifies you, you've probably spent years people-pleasing to avoid it, which means you've had almost no practice tolerating someone's mild disappointment. Build that tolerance on stakes that don't matter. Decline the extra meeting. Say \"no thanks\" to the upsell. Send the dish back. It'll trigger the feeling, on purpose, at low intensity, and you'll watch nothing bad happen. Do it enough on small things and it's there when something big needs a no.",
+      practice: "Say one small, honest no this week where before you'd have caved. Let the discomfort come. Notice you survive it."
+    },
+    {
+      id: "exposure",
+      title: "Take small social risks",
+      pill: ["ok", "Graded exposure"],
+      body: "Avoidance is what keeps the fear strong: you never get to find out it's survivable. The evidence-based version is graded and self-chosen, not \"go get rejected every day.\" Build a small ladder of things you've been avoiding for fear of judgment, easiest first, and step onto the next rung when the last stops scaring you. Ask a question in a meeting. Share an unfinished idea. Reach out to someone first. Each time you don't get destroyed, the prediction weakens. (Skip the stunt version of deliberately courting rejection; ungraded, it can sting you worse.)",
+      practice: "List three things you avoid out of fear of rejection, ordered easy to hard. Do the easiest one this week."
+    },
+    {
+      id: "community",
+      title: "Find your people, drop the mask",
+      pill: ["ok", "Support"],
+      body: "It's a lot easier to risk a stranger's disapproval when a few people already accept you as you are. Constantly performing a more acceptable version of yourself is exhausting and quietly confirms the fear that the real you wouldn't be welcome. Invest in the handful of relationships where you don't have to mask. With a secure base, other people's opinions carry less weight: \"I don't need everyone's approval, I've got the people who matter.\"",
+      practice: "Name your two or three safe people. Reach out to one this week. Let yourself be a little more unmasked than usual."
+    },
+    {
+      id: "prevention",
+      title: "Prevention beats rescue",
+      pill: ["ok", "Upstream"],
+      body: "You can't talk yourself down mid-episode nearly as well as you can avoid running so hot that everything triggers you. The upstream basics do more than any in-the-moment trick: protect your sleep, don't run at full throttle all day every day, and step away from stress before it stacks. When you're rested and not maxed out, the same comment that would've floored you barely registers. Recovery skills are the safety net; a life in some balance is the real work.",
+      practice: "Pick one upstream lever this week: a consistent bedtime, one genuine break in the day, or one thing you'll stop over-committing to."
+    }
+  ];
+
+  function renderLessons() {
+    var host = $("#lessonHost"); host.innerHTML = "";
+    LESSONS.forEach(function (L) {
+      var done = !!state.skills[L.id];
+      var d = document.createElement("details");
+      d.className = "lesson";
+      d.innerHTML =
+        '<summary><span class="pill ' + L.pill[0] + '">' + L.pill[1] + '</span> ' + L.title +
+        (done ? ' <span class="pill strong">practiced</span>' : '') + '</summary>' +
+        '<div class="body"><p>' + L.body + '</p>' +
+        '<div class="practice"><b>Try this:</b> ' + L.practice + '</div>' +
+        '<div class="row" style="margin-top:.7rem">' +
+        '<button class="btn ' + (done ? 'secondary' : '') + '" data-skill="' + L.id + '">' +
+        (done ? 'Practiced ✓ (tap to undo)' : "Mark as practiced") + '</button></div></div>';
+      host.appendChild(d);
+    });
+    $all("[data-skill]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = b.dataset.skill;
+        if (state.skills[id]) { delete state.skills[id]; } else { state.skills[id] = nowStamp(); }
+        save(); renderLessons(); renderSkillProgress();
+      });
+    });
+  }
+  function renderSkillProgress() {
+    var host = $("#skillProgress");
+    var done = LESSONS.filter(function (L) { return state.skills[L.id]; });
+    if (!done.length) { host.innerHTML = '<p class="quiet">Nothing marked yet. Work through a lesson above and mark it once you\'ve tried it in real life.</p>'; return; }
+    host.innerHTML = '<p><b>' + done.length + '</b> of ' + LESSONS.length + ' skills practiced.</p>' +
+      '<div class="row">' + done.map(function (L) { return '<span class="pill strong">' + L.title + '</span>'; }).join("") + '</div>';
+  }
+
+  // ---------- tracking ----------
+  var ZONEVAL = { green: 1, yellow: 2, red: 3 };
+  var ZONECOLOR = { green: "var(--green)", yellow: "var(--yellow)", red: "var(--red)" };
+
+  function renderStats() {
+    $("#statEpisodes").textContent = state.episodes.length;
+    var recs = state.episodes.map(function (e) { return e.recover; }).filter(function (v) { return typeof v === "number" && v >= 0; });
+    $("#statRecover").textContent = recs.length ? Math.round(recs.reduce(function (a, b) { return a + b; }, 0) / recs.length) : "–";
+    $("#statStreak").textContent = currentStreak();
+  }
+  function currentStreak() {
+    var streak = 0, d = new Date();
+    for (;;) {
+      var k = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      if (state.checkins[k]) { streak++; d.setDate(d.getDate() - 1); }
+      else break;
+    }
+    return streak;
+  }
+  function renderStreakDots() {
+    var host = $("#streakDots"); host.innerHTML = "";
+    var d = new Date(); d.setDate(d.getDate() - 13);
+    for (var i = 0; i < 14; i++) {
+      var k = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      var on = !!state.checkins[k];
+      var el = document.createElement("i");
+      if (on) el.className = "on";
+      el.title = k + (on ? " ✓" : "");
+      host.appendChild(el);
+      d.setDate(d.getDate() + 1);
+    }
+  }
+  function renderIntensityChart() {
+    var svg = $("#chartIntensity");
+    var eps = state.episodes.slice(-30);
+    if (!eps.length) { svg.innerHTML = ""; $("#chartEmpty").classList.remove("hidden"); return; }
+    $("#chartEmpty").classList.add("hidden");
+    var W = 320, H = 120, pad = 18, plotW = W - pad * 2, plotH = H - pad * 2;
+    var n = eps.length;
+    var pts = eps.map(function (e, i) {
+      var x = pad + (n === 1 ? plotW / 2 : (i / (n - 1)) * plotW);
+      var v = ZONEVAL[e.zone] || 2;
+      var y = pad + plotH - ((v - 1) / 2) * plotH;
+      return { x: x, y: y, e: e };
+    });
+    var grid = "";
+    [1, 2, 3].forEach(function (v) {
+      var y = pad + plotH - ((v - 1) / 2) * plotH;
+      grid += '<line x1="' + pad + '" y1="' + y + '" x2="' + (W - pad) + '" y2="' + y + '" stroke="var(--line)" stroke-width="1"/>';
+      grid += '<text x="2" y="' + (y + 3) + '" font-size="7" fill="var(--ink-faint)">' + (v === 1 ? "Gr" : v === 2 ? "Yl" : "Rd") + '</text>';
+    });
+    var path = pts.map(function (p, i) { return (i ? "L" : "M") + p.x.toFixed(1) + " " + p.y.toFixed(1); }).join(" ");
+    var dots = pts.map(function (p) { return '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="3.2" fill="' + (ZONECOLOR[p.e.zone] || "var(--accent)") + '"><title>' + fmtDate(p.e.t) + ": " + (p.e.zone) + "</title></circle>"; }).join("");
+    svg.innerHTML = grid + '<path d="' + path + '" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>' + dots;
+  }
+  function renderTriggersChart() {
+    var svg = $("#chartTriggers");
+    var counts = {};
+    state.episodes.forEach(function (e) {
+      var t = (e.trigger || "(unspecified)").toLowerCase().trim().slice(0, 24);
+      counts[t] = (counts[t] || 0) + 1;
+    });
+    var arr = Object.keys(counts).map(function (k) { return { k: k, v: counts[k] }; }).sort(function (a, b) { return b.v - a.v; }).slice(0, 6);
+    if (!arr.length) { svg.innerHTML = '<text x="6" y="20" font-size="9" fill="var(--ink-faint)">Log a few episodes to see your top triggers.</text>'; return; }
+    var W = 320, rowH = 20, max = arr[0].v, barMax = 150, labelX = 6, barX = 150;
+    svg.setAttribute("viewBox", "0 0 " + W + " " + (arr.length * rowH + 8));
+    var rows = arr.map(function (d, i) {
+      var y = i * rowH + 6;
+      var w = Math.max(3, (d.v / max) * barMax);
+      var label = d.k.length > 22 ? d.k.slice(0, 21) + "…" : d.k;
+      return '<text x="' + labelX + '" y="' + (y + 11) + '" font-size="9" fill="var(--ink)">' + escapeHtml(label) + '</text>' +
+        '<rect x="' + barX + '" y="' + (y + 3) + '" width="' + w + '" height="11" rx="3" fill="var(--accent)"/>' +
+        '<text x="' + (barX + w + 4) + '" y="' + (y + 12) + '" font-size="9" fill="var(--ink-faint)">' + d.v + '</text>';
+    }).join("");
+    svg.innerHTML = rows;
+  }
+  function escapeHtml(s) { return String(s).replace(/[&<>"]/g, function (c) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]; }); }
+
+  function renderLog() {
+    var host = $("#logTable");
+    if (!state.episodes.length) { host.innerHTML = '<p class="quiet">No episodes yet.</p>'; return; }
+    var rows = state.episodes.slice().reverse().map(function (e, revIdx) {
+      var idx = state.episodes.length - 1 - revIdx;
+      var dirTxt = e.dir === "inward" ? "inward" : e.dir === "outward" ? "outward" : e.dir === "mixed" ? "both" : "";
+      return '<tr><td class="quiet">' + fmtDate(e.t) + '</td>' +
+        '<td>' + escapeHtml(e.trigger || "") + (e.note ? '<br><span class="quiet">' + escapeHtml(e.note) + '</span>' : '') + '</td>' +
+        '<td><span class="dot ' + e.zone + '"></span></td>' +
+        '<td class="quiet">' + dirTxt + '</td>' +
+        '<td class="quiet">' + (typeof e.recover === "number" ? e.recover + "m" : "") + '</td>' +
+        '<td><button class="btn ghost" data-del="' + idx + '" aria-label="Delete">✕</button></td></tr>';
+    }).join("");
+    host.innerHTML = '<table class="log"><thead><tr><th>Date</th><th>Trigger &amp; notes</th><th>Zone</th><th>Dir</th><th>Rec</th><th></th></tr></thead><tbody>' + rows + '</tbody></table>';
+    $all("[data-del]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var i = parseInt(b.dataset.del, 10);
+        state.episodes.splice(i, 1); save(); renderTrack();
+      });
+    });
+  }
+
+  function renderTrack() {
+    renderStats(); renderStreakDots(); renderIntensityChart(); renderTriggersChart(); renderLog();
+    $("#weeklyNote").value = state.weekly || "";
+  }
+
+  // check-in
+  $all("[data-ci]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var k = todayKey();
+      state.checkins[k] = { zone: b.dataset.ci, practiced: $("#ciPracticed").checked, t: nowStamp() };
+      save(); renderTrack();
+      $("#ciMsg").textContent = "Checked in for today. Streak: " + currentStreak() + " day" + (currentStreak() === 1 ? "" : "s") + ".";
+      toast("Checked in. Nice.");
+    });
+  });
+
+  $("#addEpisode").addEventListener("click", function () {
+    var trig = $("#ep-trigger").value.trim();
+    if (!trig) { toast("Add a short trigger first."); return; }
+    var rec = parseInt($("#ep-recover").value, 10);
+    state.episodes.push({
+      t: nowStamp(), trigger: trig, zone: $("#ep-zone").value,
+      dir: $("#ep-dir").value, recover: isNaN(rec) ? null : rec,
+      note: $("#ep-note").value.trim()
+    });
+    save(); renderTrack();
+    $("#ep-trigger").value = ""; $("#ep-recover").value = ""; $("#ep-note").value = "";
+    toast("Episode saved.");
+  });
+
+  $("#saveWeekly").addEventListener("click", function () {
+    state.weekly = $("#weeklyNote").value; state.weeklyUpdated = nowStamp(); save();
+    toast("Weekly review saved.");
+  });
+
+  // export / import / wipe
+  $("#exportBtn").addEventListener("click", function () {
+    var blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = "steady-backup.json"; document.body.appendChild(a); a.click();
+    document.body.removeChild(a); setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    toast("Backup downloaded.");
+  });
+  $("#importBtn").addEventListener("click", function () { $("#importFile").click(); });
+  $("#importFile").addEventListener("change", function (ev) {
+    var f = ev.target.files[0]; if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try {
+        var d = JSON.parse(reader.result);
+        state = Object.assign(blank(), d); save();
+        renderAll(); toast("Backup imported.");
+      } catch (e) { toast("Couldn't read that file."); }
+    };
+    reader.readAsText(f);
+    ev.target.value = "";
+  });
+  $("#wipeBtn").addEventListener("click", function () {
+    if (confirm("Erase all your logged data on this device? This can't be undone.")) {
+      state = blank(); save(); renderAll(); toast("All data erased.");
+    }
+  });
+
+  // ---------- init ----------
+  function renderAll() { renderLessons(); renderSkillProgress(); renderTrack(); }
+  renderAll();
+})();
+</script>
+</body>
+</html>

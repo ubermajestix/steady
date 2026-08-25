@@ -1,0 +1,5 @@
+# Source transcripts (personal / copyrighted video captions) — not published
+*.srt
+
+# OS cruft
+.DS_Store
