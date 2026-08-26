@@ -176,15 +176,6 @@
   .safety { border-left: 4px solid var(--red); background: var(--red-soft); border-radius: 8px; padding: .8rem 1rem; }
   .callout { border-left: 4px solid var(--accent); background: var(--accent-soft); border-radius: 8px; padding: .7rem 1rem; margin: 1rem 0; }
 
-  /* floating rescue */
-  .fab {
-    position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; z-index: 40;
-    background: var(--red); color: #fff; border: none; cursor: pointer;
-    font: inherit; font-weight: 700; padding: .8rem 1.3rem; border-radius: 999px;
-    box-shadow: 0 8px 26px color-mix(in srgb, var(--red) 45%, transparent);
-  }
-  .fab:active { transform: translateX(-50%) translateY(1px); }
-
   /* tracking */
   table.log { width: 100%; border-collapse: collapse; font-size: .9rem; }
   table.log th, table.log td { text-align: left; padding: .45rem .4rem; border-bottom: 1px solid var(--line); vertical-align: top; }
@@ -536,7 +527,6 @@
 </footer>
 </main>
 
-<button class="fab" id="fab">I'm in the red, help now</button>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -589,7 +579,6 @@
   $all("nav.tabs button").forEach(function (b) {
     b.addEventListener("click", function () { show(b.dataset.view); });
   });
-  $("#fab").addEventListener("click", function () { show("rescue"); resetRescue(); });
 
   // ---------- rescue flow ----------
   var currentZone = null;
