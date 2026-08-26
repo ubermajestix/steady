@@ -176,15 +176,6 @@
   .safety { border-left: 4px solid var(--red); background: var(--red-soft); border-radius: 8px; padding: .8rem 1rem; }
   .callout { border-left: 4px solid var(--accent); background: var(--accent-soft); border-radius: 8px; padding: .7rem 1rem; margin: 1rem 0; }
 
-  /* floating rescue */
-  .fab {
-    position: fixed; left: 50%; transform: translateX(-50%); bottom: 18px; z-index: 40;
-    background: var(--red); color: #fff; border: none; cursor: pointer;
-    font: inherit; font-weight: 700; padding: .8rem 1.3rem; border-radius: 999px;
-    box-shadow: 0 8px 26px color-mix(in srgb, var(--red) 45%, transparent);
-  }
-  .fab:active { transform: translateX(-50%) translateY(1px); }
-
   /* tracking */
   table.log { width: 100%; border-collapse: collapse; font-size: .9rem; }
   table.log th, table.log td { text-align: left; padding: .45rem .4rem; border-bottom: 1px solid var(--line); vertical-align: top; }
@@ -311,6 +302,13 @@
         <li>If you can, just ask: "What did you mean by that?" Uncertainty, not the event, is usually the thing you can't stand.</li>
         <li>Could a calm version of you simply say "oh, my bad" and move on? That option is still open once the alarm quiets.</li>
       </ul>
+    </div>
+
+    <div class="callout">
+      <b>Face to face, when you can't just walk away.</b>
+      A pause only reads as stonewalling if you turn away with it. Turn toward instead: say what you're doing and when you're back.
+      <em>"I want to get this right, and I can feel myself getting defensive. Give me a few minutes and I'm coming back to finish this."</em>
+      Then actually come back. And if a small "my bad" is honest, the fastest repair is to say it now, about the impact only, and save the "why" for after they feel heard.
     </div>
 
     <label class="field">One small next step (or "nothing needed"):</label>
@@ -529,7 +527,6 @@
 </footer>
 </main>
 
-<button class="fab" id="fab">I'm in the red, help now</button>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -582,7 +579,6 @@
   $all("nav.tabs button").forEach(function (b) {
     b.addEventListener("click", function () { show(b.dataset.view); });
   });
-  $("#fab").addEventListener("click", function () { show("rescue"); resetRescue(); });
 
   // ---------- rescue flow ----------
   var currentZone = null;
@@ -742,6 +738,13 @@
       pill: ["ok", "DBT"],
       body: "The alarm gives you an urge: attack, or flee and hide. When the urge doesn't fit the facts, doing the opposite (gently, on purpose) teaches your system the threat wasn't real. Urge to fire off a cutting reply? Send nothing, or send something neutral. Urge to cancel plans and isolate after feeling snubbed? Go, briefly. You act against the false alarm on purpose, so it learns to quiet down next time.",
       practice: "Name your usual RSD move (lash out / withdraw / people-please). Next time it's not warranted, do the small opposite once."
+    },
+    {
+      id: "defend",
+      title: "When defending yourself is the tell",
+      pill: ["ok", "Gottman"],
+      body: "When feedback lands like an attack, the reflex is to defend: explain, list everything you did right, prove you're not the thing they're reacting to. It feels like accountability, but it's the opposite. It's your mind bracing against a drop into \"I'm worthless,\" and building your case is how it keeps from falling. So the case is the tell. The moment you catch yourself lining up evidence, that's the alarm, not the truth. Here's the release: what you meant and how it landed are two separate things, and no amount of good intent cancels a real impact. You don't have to disown your reasons to say the true, narrow thing: \"When I did that, it landed badly, and I don't want that.\" That costs you nothing you actually believe. Say it first. The \"why\" can come after, offered as \"here's what was going on in me,\" not \"here's why you shouldn't be upset.\" Same words, opposite job, decided by the order.",
+      practice: "Next time you feel the urge to build your case, name it silently: \"That's the shield.\" Then say one narrow sorry, about the impact only, and stop. Notice you don't disappear."
     },
     {
       id: "no",
